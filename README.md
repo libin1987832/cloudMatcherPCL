@@ -5,7 +5,7 @@ Program matches two point clouds using variety of ICP alghoritms
 Program code is based on tutorials and examples available on http://pointclouds.org/
 
 # Usage
-./interactive_icp cloud0.ply cloud1.ply <ICP_alghoritm> <number_of_iterations>
+./interactive_icp cloud_1 cloud_2 ICP_alghoritm number_of_iterations
 
 #Arguments
 argv[3]:
