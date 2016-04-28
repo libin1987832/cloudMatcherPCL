@@ -86,7 +86,7 @@ int main (int argc, char* argv[])
   
   //choose ICP
   std::cout << "Choosed ICP variant: ";
-  /*
+  
   //std::string ICP = argv[3]; 
   typedef pcl::IterativeClosestPoint<PointT, PointT> icpType;
   switch(atoi(argv[3]))
@@ -139,14 +139,12 @@ int main (int argc, char* argv[])
 	  }
       break;
   }
+  
   //declaration
   icpType icp;
-  
-  * */
-  
-  
+   
   //Iterative Closest Point
-  pcl::IterativeClosestPoint<PointT, PointT> icp;
+  //pcl::IterativeClosestPoint<PointT, PointT> icp;
     
   //Generalized Iterative Closest Point
   //pcl::GeneralizedIterativeClosestPoint<PointT, PointT> icp;
