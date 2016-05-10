@@ -14,6 +14,9 @@
 typedef pcl::PointXYZINormal PointT;   //Iterative Closest Point With Normals
 typedef pcl::PointCloud<PointT> PointCloudT;
 
+//time counter
+long int timeCnt;
+
 bool next_iteration = false;
 
 void print4x4Matrix (const Eigen::Matrix4d & matrix)
@@ -142,33 +145,27 @@ int main (int argc, char* argv[])
   
   //declaration
   icpType icp;
-   
-  //Iterative Closest Point
-  //pcl::IterativeClosestPoint<PointT, PointT> icp;
-    
-  //Generalized Iterative Closest Point
-  //pcl::GeneralizedIterativeClosestPoint<PointT, PointT> icp;
-    
-  //Iterative Closest Point With Normals
-  //pcl::IterativeClosestPointWithNormals<PointT, PointT> icp;
-    
-  //Iterative Closest Point Non Linear
-  //pcl::IterativeClosestPointNonLinear<PointT, PointT> icp;
-    
-  //Joint Iterative Closest Point
-  //pcl::JointIterativeClosestPoint<PointT, PointT> icp;
-    
+  
   icp.setMaximumIterations (iterations);
+  //icp.setMaxCorrespondenceDistance(0.5);
+  //icp.setTransformationEpsilon
+  icp.setRANSACOutlierRejectionThreshold(0.5);
   icp.setInputSource (cloud_in_2);
   icp.setInputTarget (cloud_in_1);
   icp.align (*cloud_in_2);
   icp.setMaximumIterations (1);  // We set this variable to 1 for the next time we will call .align () function
-  std::cout << "Applied " << iterations << " ICP iteration(s) in " << time.toc () << " ms" << std::endl;
+  timeCnt = time.toc ();
 
+  std::cout << "----------------------------------------------------" << std::endl;
+  std::cout << "Applied " << iterations << " ICP iteration(s) in " << timeCnt << " ms" << std::endl;
+  //cout precosion
+  const int precision = 10;
   if (icp.hasConverged ())
   {
-    std::cout << "\nICP has converged, score is " << icp.getFitnessScore () << std::endl;
-    std::cout << "\nICP transformation " << iterations << " : cloud_in_2 -> cloud_in_1" << std::endl;
+    std::cout.precision(precision);
+    std::cout << "ICP has converged, score is " << icp.getFitnessScore () << std::endl;
+    std::cout << "ICP transformation " << iterations << " : cloud_in_2 -> cloud_in_1" << std::endl;
+    std::cout << "----------------------------------------------------" << std::endl;
     transformation_matrix = icp.getFinalTransformation ().cast<double>();
     print4x4Matrix (transformation_matrix);
   }
@@ -196,6 +193,7 @@ int main (int argc, char* argv[])
 
   // Original point cloud is white
   pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_in_1_color_h (cloud_in_1, (int) 255 * txt_gray_lvl, (int) 255 * txt_gray_lvl, (int) 255 * txt_gray_lvl);
+  
   viewer.addPointCloud (cloud_in_1, cloud_in_1_color_h, "cloud_in_v1", v1);
   viewer.addPointCloud (cloud_in_1, cloud_in_1_color_h, "cloud_in_v2", v2);
 
@@ -231,20 +229,26 @@ int main (int argc, char* argv[])
   while (!viewer.wasStopped ())
   {
     viewer.spinOnce ();
-
     // The user pressed "space" :
     if (next_iteration)
     {
       // The Iterative Closest Point algorithm
       time.tic ();
       icp.align (*cloud_in_2);
-      std::cout << "Applied 1 ICP iteration in " << time.toc () << " ms" << std::endl;
-
+      time.toc ();
+      timeCnt += time.toc();
+      
+      std::cout << "ANOTHER ITERATION:" << std::endl;
+      std::cout << "----------------------------------------------------" << std::endl;
+      std::cout << "Applied 1 ICP iterations in " << time.toc() << " ms" << std::endl;
+      std::cout << "Applied " << iterations << " ICP iterations in " << timeCnt << " ms" << std::endl;
+      
       if (icp.hasConverged ())
       {
-        //printf ("\033[11A");  // Go up 11 lines in terminal output.
-        printf ("\nICP has converged, score is %+.0e\n", icp.getFitnessScore ());
-        std::cout << "\nICP transformation " << ++iterations << " : cloud_in_1 -> cloud_in_2" << std::endl;
+        std::cout.precision(precision);
+        std::cout << "ICP has converged, score is " << icp.getFitnessScore () << std::endl;
+	std::cout << "----------------------------------------------------" << std::endl;
+        std::cout << "ICP transformation " << ++iterations << " : cloud_in_1 -> cloud_in_2" << std::endl;
         transformation_matrix *= icp.getFinalTransformation().cast<double>();  // WARNING /!\ This is not accurate! For "educational" purpose only!
         print4x4Matrix (transformation_matrix);  // Print the transformation between original pose and current pose
 
@@ -252,7 +256,7 @@ int main (int argc, char* argv[])
         ss << iterations;
         std::string iterations_cnt = "ICP iterations = " + ss.str ();
         viewer.updateText (iterations_cnt, 10, 60, 16, txt_gray_lvl, txt_gray_lvl, txt_gray_lvl, "iterations_cnt");
-        viewer.updatePointCloud (cloud_in_2, cloud_in_2_color_h, "cloud_icp_v2");
+        viewer.updatePointCloud (cloud_in_2, cloud_in_2_color_h, "cloud_in_2_v2");
       }
       else
       {
