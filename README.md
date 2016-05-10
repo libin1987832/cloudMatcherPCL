@@ -1,4 +1,4 @@
-# PCL-Cloud-Matcher
+# cloudMatcherPCL
 Program matches two point clouds using variety of ICP alghoritms
 
 #Note
